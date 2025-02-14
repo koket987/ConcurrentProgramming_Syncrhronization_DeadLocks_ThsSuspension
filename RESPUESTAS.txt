@@ -1,0 +1,2 @@
+Sí, podría generarse una condición de carrera, dado que varios hilos pueden intentar modificar la lista de "inmortales" simultáneamente. Si dos o más hilos intentan eliminar un "inmortal" de la lista al mismo tiempo, podría ocurrir una inconsistencias en los datos, como que un inmortal se elimine varias veces o que no se elimine correctamente, lo que afectaría el flujo de la simulación y los resultados.
+Esta situación puede suceder debido a la falta de sincronización entre los hilos, lo que genera acceso concurrente no controlado a la lista compartida.
