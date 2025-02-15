@@ -44,23 +44,24 @@ public class Immortal extends Thread {
                 }
             }
 
-            if (immortalsPopulation.size() > 1) {
-                int myIndex = immortalsPopulation.indexOf(this);
-                int nextFighterIndex = r.nextInt(immortalsPopulation.size());
+            synchronized (immortalsPopulation) {
+                if (immortalsPopulation.size() > 1) {
+                    int myIndex = immortalsPopulation.indexOf(this);
+                    int nextFighterIndex = r.nextInt(immortalsPopulation.size());
 
-                if (nextFighterIndex == myIndex) {
-                    nextFighterIndex = (nextFighterIndex + 1) % immortalsPopulation.size();
-                }
+                    if (nextFighterIndex == myIndex) {
+                        nextFighterIndex = (nextFighterIndex + 1) % immortalsPopulation.size();
+                    }
 
-                Immortal opponent = immortalsPopulation.get(nextFighterIndex);
-                this.fight(opponent);
-            } else {
-                // Notificar ganador solo una vez
-                if (immortalsPopulation.size() == 1 && !winnerNotified) {
-                    winnerNotified = true;
-                    ControlFrame.notifyWinner(immortalsPopulation.get(0));
+                    Immortal opponent = immortalsPopulation.get(nextFighterIndex);
+                    this.fight(opponent);
+                } else {
+                    // Verificar que el ganador sigue en la lista antes de notificarlo
+                    if (immortalsPopulation.size() == 1 && immortalsPopulation.contains(this)) {
+                        ControlFrame.notifyWinner(this);
+                    }
+                    break;
                 }
-                break;
             }
 
             try {
@@ -70,6 +71,8 @@ public class Immortal extends Thread {
             }
         }
     }
+
+
 
 
     public static void pause() {
@@ -90,12 +93,14 @@ public class Immortal extends Thread {
                 this.health += defaultDamageValue;
                 updateCallback.processReport("Fight: " + this + " vs " + i2 + "\n");
             } else {
-                // Remove the immortal from the population
-                immortalsPopulation.remove(i2);
-                updateCallback.processReport(i2 + " has been removed from the game.\n");
+                if (immortalsPopulation.size() > 1 && immortalsPopulation.contains(i2)) {
+                    immortalsPopulation.remove(i2);
+                    updateCallback.processReport(i2 + " has been removed from the game.\n");
+                }
             }
         }
     }
+
 
     public void changeHealth(int v) {
         health = v;
