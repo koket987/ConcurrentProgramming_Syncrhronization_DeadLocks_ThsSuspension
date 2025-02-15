@@ -20,6 +20,7 @@ public class Immortal extends Thread {
     private static final Object pauseLock = new Object();
 
     private final Random r = new Random(System.currentTimeMillis());
+    private boolean winnerNotified = false;
 
 
     public Immortal(String name, List<Immortal> immortalsPopulation, int health, int defaultDamageValue, ImmortalUpdateReportCallback ucb) {
@@ -43,12 +44,10 @@ public class Immortal extends Thread {
                 }
             }
 
-            // Lógica de pelea...
             if (immortalsPopulation.size() > 1) {
                 int myIndex = immortalsPopulation.indexOf(this);
                 int nextFighterIndex = r.nextInt(immortalsPopulation.size());
 
-                // Evitar pelear contra uno mismo
                 if (nextFighterIndex == myIndex) {
                     nextFighterIndex = (nextFighterIndex + 1) % immortalsPopulation.size();
                 }
@@ -56,21 +55,22 @@ public class Immortal extends Thread {
                 Immortal opponent = immortalsPopulation.get(nextFighterIndex);
                 this.fight(opponent);
             } else {
-                // Notificar que hay un ganador
-                if (immortalsPopulation.size() == 1) {
-                    ControlFrame.notifyWinner(this); // Notificar al ControlFrame
+                // Notificar ganador solo una vez
+                if (immortalsPopulation.size() == 1 && !winnerNotified) {
+                    winnerNotified = true;
+                    ControlFrame.notifyWinner(immortalsPopulation.get(0));
                 }
-                break; // Salir del bucle si no hay más peleas posibles
+                break;
             }
 
             try {
                 Thread.sleep(1);
             } catch (InterruptedException e) {
-                // Manejar la interrupción y salir del bucle
                 return; // Salir del hilo si se interrumpe
             }
         }
     }
+
 
     public static void pause() {
         paused = true;
